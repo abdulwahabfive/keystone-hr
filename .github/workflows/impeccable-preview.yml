@@ -1,4 +1,8 @@
 # .github/workflows/impeccable-preview.yml
+# Builds the site in YOUR CI and uploads the static output to Impeccable, which
+# serves it as the preview the design review renders. No secrets: the job's
+# GitHub OIDC token proves which repo and commit is uploading. When a step
+# fails, the last step tells Impeccable which one, so the setup page can say.
 name: impeccable preview
 on:
   pull_request:
@@ -41,3 +45,6 @@ jobs:
             '{"outcomes": {"install": "${{ steps.install.outcome }}", "prepare": "${{ steps.prepare.outcome }}", "seed": "${{ steps.seed.outcome }}", "build": "${{ steps.build.outcome }}", "upload": "${{ steps.upload.outcome }}"}, "log": $log, "runUrl": $url}' \
             | curl -sS -X POST https://impeccable.reviews/api/previews/report \
               -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" --data-binary @-
+# If your site is built under a subpath (SvelteKit paths.base, Next basePath),
+# tar the PARENT of the output so its assets resolve, and add
+# -H "X-Impeccable-Base-Path: /that-path" to the upload.
